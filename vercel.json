@@ -43,7 +43,7 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://clientsphere.runasp.net",
+    "VITE_API_URL": "http://clientsphere.runasp.net",
     "VITE_STRIPE_PUBLISHABLE_KEY": "pk_test_51TRCE4Dk7XCXaqxHuBYqzgayiX9yNsCpomStzrlehMvIcJhQ2LfPyjDDxmTWrp0EihMHp3zmQIeu59t1jyANUlMT00OtBsBBky"
   }
 }
