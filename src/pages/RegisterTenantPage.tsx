@@ -102,11 +102,25 @@ export default function RegisterTenantPage() {
         planId:         selectedPlanId,
       })
 
-      // Step 2: Redirect to Stripe checkout
-      const checkoutResponse = await authService.initiateCheckout(preRegResponse.preRegistrationToken)
-      
-      // Redirect to Stripe
-      window.location.href = checkoutResponse.url
+      // Step 2: For free plan, account is created directly (201 response)
+      if (selectedPlanId === 'free') {
+        // Free plan - account already created, show success and redirect to login
+        setApiError(null)
+        // Brief delay to show the button state change, then redirect
+        setTimeout(() => {
+          window.location.href = '/login?registered=true&plan=free'
+        }, 1000)
+        return
+      }
+
+      // Step 2: For paid plans, redirect to Stripe checkout
+      // Type guard: ensure we have preRegistrationToken (paid plans only)
+      if ('preRegistrationToken' in preRegResponse) {
+        const checkoutResponse = await authService.initiateCheckout(preRegResponse.preRegistrationToken)
+        
+        // Redirect to Stripe
+        window.location.href = checkoutResponse.url
+      }
     } catch (err) {
       const axiosError = err as AxiosError<ValidationProblemDetails>
       const data = axiosError.response?.data
@@ -188,22 +202,28 @@ export default function RegisterTenantPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 Select Plan
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {[
-                  { id: 'starter', name: 'Starter', price: '$29/mo' },
-                  { id: 'professional', name: 'Professional', price: '$79/mo' },
-                  { id: 'enterprise', name: 'Enterprise', price: '$199/mo' },
+                  { id: 'free', name: 'Free', price: '$0/mo', featured: false },
+                  { id: 'starter', name: 'Starter', price: '$29/mo', featured: false },
+                  { id: 'professional', name: 'Professional', price: '$79/mo', featured: true },
+                  { id: 'enterprise', name: 'Enterprise', price: '$199/mo', featured: false },
                 ].map((plan) => (
                   <button
                     key={plan.id}
                     type="button"
                     onClick={() => setSelectedPlanId(plan.id)}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                    className={`p-3 rounded-lg border-2 text-left transition-all relative ${
                       selectedPlanId === plan.id
                         ? 'border-brand-600 bg-brand-50'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    } ${plan.featured ? 'ring-2 ring-brand-400' : ''}`}
                   >
+                    {plan.featured && (
+                      <div className="absolute -top-2 -right-2 bg-brand-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold">
+                        Popular
+                      </div>
+                    )}
                     <div className="text-sm font-semibold text-gray-900">{plan.name}</div>
                     <div className="text-xs text-gray-600">{plan.price}</div>
                   </button>
