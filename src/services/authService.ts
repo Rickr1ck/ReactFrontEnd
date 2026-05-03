@@ -28,8 +28,10 @@ export const authService = {
     return data
   },
 
-  async registerWithPlan(request: RegisterWithPlanRequest): Promise<PreRegistrationResponse> {
-    const { data } = await api.post<PreRegistrationResponse>('/auth/register-with-plan', request)
+  async registerWithPlan(request: RegisterWithPlanRequest): Promise<PreRegistrationResponse | AuthResponse> {
+    // For free plan, returns AuthResponse (201)
+    // For paid plans, returns PreRegistrationResponse (200)
+    const { data } = await api.post<PreRegistrationResponse | AuthResponse>('/auth/register-with-plan', request)
     return data
   },
 
