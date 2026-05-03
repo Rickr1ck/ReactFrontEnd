@@ -1,6 +1,6 @@
 // src/pages/LoginPage.tsx
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useState, type FormEvent, useEffect } from 'react'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import logo from '@/assets/LogoWithName.png'
 import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/services/authService'
@@ -10,6 +10,7 @@ import type { ValidationProblemDetails } from '@/types/api.types'
 export default function LoginPage() {
   const navigate  = useNavigate()
   const location  = useLocation()
+  const [searchParams] = useSearchParams()
   const setSession = useAuthStore(s => s.setSession)
 
   const from = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard'
@@ -20,7 +21,22 @@ export default function LoginPage() {
     tenantId: '',
   })
   const [error,   setError]   = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Show success message if user just registered
+  useEffect(() => {
+    const registered = searchParams.get('registered')
+    const plan = searchParams.get('plan')
+    
+    if (registered === 'true') {
+      if (plan === 'free') {
+        setSuccess('Your free workspace has been created successfully! Please sign in.')
+      } else {
+        setSuccess('Payment completed! Your workspace is ready. Please sign in.')
+      }
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -128,6 +144,15 @@ export default function LoginPage() {
                 "
               />
             </div>
+
+            {success && (
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-green-50 border border-green-100">
+                <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm text-green-700">{success}</p>
+              </div>
+            )}
 
             {error && (
               <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-100">
